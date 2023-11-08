@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#define size 3
 
 /* the size (in bytes) of shared memory object */
 const int SIZE = 4096;
@@ -32,9 +33,9 @@ const char* name = "OS";
 struct Thing{
     sem_t lock;
     int test;
-    int *in;
-    int *out;
-    int buff[3];
+    int in;
+    int out;
+    int buff[size];
 };
 
 #endif

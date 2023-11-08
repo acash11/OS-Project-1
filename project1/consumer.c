@@ -23,25 +23,29 @@ int main(){
     sharedMem = mmap(NULL, sizeof(*sharedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     //sleep(1);
     //sharedMem->test = 9;
-    sleep(1);
-    printf("%i", sharedMem->test);
+    //sleep(1);
+    //printf("%i", sharedMem->test);
     //WORKSSSSSSSSSS
 
     //wait for other to signal now
     //
-    int limit = 5;
+    int limit = 10;
     do{
-        fprintf(stderr, "Consumer about to wait...\n");
-        sem_wait(&sharedMem->lock);
-            //critical section
-        fprintf(stderr, "Consumer critical...\n");
-        printf("%i", sharedMem->test);
-        printf("%s", "\n");
-        sem_post(&sharedMem->lock);
-        sharedMem->buff[0] = 1;
-        fprintf(stderr, "Consumer signaled...\n");
-        --limit;
-        if(limit == 0) {shm_unlink(name); exit(0);};
+        if (sharedMem->in != sharedMem->out){// if not empty
+            //fprintf(stderr, "Consumer about to wait...\n");
+            sem_wait(&sharedMem->lock);
+                //critical section
+            fprintf(stderr, "Consumer critical...\n");
+            printf("%i", sharedMem->buff[sharedMem->out]);
+            printf("%s", "\n");
+            fprintf(stderr, "Consumer signaled...\n");
+            //sharedMem->buff[0] = 1;
+            sharedMem->out = (1 + sharedMem->out) % bufSize;
+            sem_post(&sharedMem->lock);
+            
+            --limit;
+            if(limit == 0) {shm_unlink(name); exit(0);};
+        }
     } while(limit > 0);
 
 

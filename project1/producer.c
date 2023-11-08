@@ -28,20 +28,35 @@ int main(){
     fprintf(stderr, "Initializing...");
     sem_init(&sharedMem->lock, 1, 1);
 
+
+
+///////////////////////////////////////////////////////////////////
+
+    sharedMem->in = 0;
+    sharedMem->out = 0;
+
+    //sharedMem->buff[0] = 1;
     //Put semaphore into shared memory
-    int limit = 5;
+    int limit = 10;
     do{
-        fprintf(stderr, "Producer about to wait...\n");
-        sem_wait(&sharedMem->lock);
-        printf("%s", "Producer critical: ");
-        sharedMem->test = rand();
-        printf("%s", "Produced item: ");
-        printf("%i", sharedMem->test);
-        printf("%s", "\n");
-        sem_post(&sharedMem->lock);
-        fprintf(stderr, "Producer signaled...\n");
-        --limit;
-        if(limit == 0) {shm_unlink(name); exit(0);};
+        //if (sharedMem->buff[0] == 1){
+        //fprintf(stderr, "Producer about to wait...\n");
+        if (!((sharedMem->in + 1) % bufSize == sharedMem->out)){//if not full ;
+            sem_wait(&sharedMem->lock);
+            printf("%s", "Producer critical: ");
+            sharedMem->buff[sharedMem->in] = 1 + (rand()%9); //random number 1-9
+            printf("%s", "Produced item: ");
+            printf("%i", sharedMem->buff[sharedMem->in]);
+
+            printf("%s", "\n");
+            fprintf(stderr, "Producer signaled...\n");
+            sharedMem->in = (1 + sharedMem->in) % bufSize;
+            //sharedMem->buff[0] = 0;
+            sem_post(&sharedMem->lock);
+            
+            --limit;
+            if(limit == 0) {shm_unlink(name); exit(0);};
+        }
     } while(limit>0);
     //wait for consumer to signal
 
