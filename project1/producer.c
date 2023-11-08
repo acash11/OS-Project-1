@@ -6,7 +6,7 @@
 #include "shared.h"
 
 int main(){
-srand(1);
+
 //Setting up shared memory
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Pointer to an instance of sharedMemStruct
@@ -46,7 +46,7 @@ srand(1);
 //Producer
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    int limit = 3;                                                        //No need to go on forever.
+    int limit = 4;                                                        //No need to go on forever.
 
     do{
         if (!((sharedMem->in + 1) % size == sharedMem->out)){             //if buffer is not full: Begin waiting. Will continue if the lock
@@ -65,6 +65,7 @@ srand(1);
             sem_post(&sharedMem->lock);                                   //Semaphore signal. Increments lock, allowing others to enter
             ////////////////////////////////////////////////              //their critical sections
             --limit;
+            //sleep(1);
         }
     } while(limit>0);
     

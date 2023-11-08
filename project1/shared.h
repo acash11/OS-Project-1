@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+//size of the buffer
 #define size 3
  
 //name of shared memory for setting up shared memory
