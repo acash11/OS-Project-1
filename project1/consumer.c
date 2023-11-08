@@ -1,61 +1,54 @@
 //Consumer file
 //Andrew Cash
+//Operating Systems
 //11/7/2023
 
 #include "shared.h"
  
 int main(){
-    /* shared memory file descriptor */
+
+//Setting up shared memory
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Pointer to an instance of sharedMemStruct
+    struct sharedMemStruct *sharedMem;
+ 
+    //Open shared memory. shm_fd will be integer that describes the shared memory file
     int shm_fd;
+    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0600);
  
-    /* pointer to shared memory object */
-    struct Thing *sharedMem;
+    //Configure the size of shared memory. Uses file description, and amount of bits as an integer
+    ftruncate(shm_fd, sizeof(struct sharedMemStruct));
  
-    /* open the shared memory object */
-    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0600);//0666
-
-    ftruncate(shm_fd, SIZE);
-    /* memory map the shared memory object */
-    //ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
-    //sleep(1);
-    //printf("%i", ((int*)ptr)[0]);
-    //printf("%i", ((int*)ptr)[1]);
+    //Asssign the shared memory to the pointer "sharedMem"
+    //Both the producer and consumer will have a "sharedMem". They will point to the same memory location
     sharedMem = mmap(NULL, sizeof(*sharedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    //sleep(1);
-    //sharedMem->test = 9;
-    //sleep(1);
-    //printf("%i", sharedMem->test);
-    //WORKSSSSSSSSSS
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //wait for other to signal now
-    //
-    int limit = 10;
+//Producer
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int limit = 3;                                                        //No need to go on forever.
+
     do{
-        if (sharedMem->in != sharedMem->out){// if not empty
-            //fprintf(stderr, "Consumer about to wait...\n");
-            sem_wait(&sharedMem->lock);
-                //critical section
-            fprintf(stderr, "Consumer critical...\n");
+        //sleep(0.2);
+        if (sharedMem->in != sharedMem->out){                             //if buffer is not empty: Begin waiting. Will continue if the lock
+            sem_wait(&sharedMem->lock);                                   // equals 1, meaning nothing is within its critical section
+
+            //Critical Section//////////////////////////////
+            printf("%s", "Consumer is in its critical section:\n");
+            printf("%s", "    Consumed item: ");
             printf("%i", sharedMem->buff[sharedMem->out]);
+            printf("%s", "\n    ");
+            sharedMem->buff[sharedMem->out] = 0;                          //0 denotes empty.
+            sharedMem->out = (1 + sharedMem->out) % size;                 //Sets "out" to the next index of the circular array
+            bufferStatus(*sharedMem);                                     //Outputs the current items in the buffer
             printf("%s", "\n");
-            fprintf(stderr, "Consumer signaled...\n");
-            //sharedMem->buff[0] = 1;
-            sharedMem->out = (1 + sharedMem->out) % bufSize;
-            sem_post(&sharedMem->lock);
-            
+            printf("%s", "~~Consumer signal, leaving critical section\n");
+            sem_post(&sharedMem->lock);                                   //Semaphore signal. Increments lock, allowing others to enter
+            ////////////////////////////////////////////////              //their critical sections
             --limit;
-            if(limit == 0) {shm_unlink(name); exit(0);};
         }
     } while(limit > 0);
 
-
-    //put semaphore into shared memory
-    
-    /* read from the shared memory object */
-    //printf("%s", (char*)ptr);
- 
-    /* remove the shared memory object */
-    //shm_unlink(name);
-    shm_unlink(name);
     return 0;
 }

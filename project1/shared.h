@@ -4,7 +4,7 @@
 //Andrew Cash
 //Operating Systems Fall 2023
 //11/7/2023
-//This header files contains information regarding the shared files
+//This header file contains information regarding the shared files
 //for the producer-consumer problem project
 
 #include <stdio.h>
@@ -19,23 +19,27 @@
 #include <semaphore.h>
 
 #define size 3
-
-/* the size (in bytes) of shared memory object */
-const int SIZE = 4096;
-
-//size of the buffer for producer consumer problem
-const int bufSize = 3;
  
-/* name of the shared memory object */
-const char* name = "OS";
+//name of shared memory for setting up shared memory
+const char* name = "SM";
 
-/* shared memory object */
-struct Thing{
+//Structure for shared memory
+struct sharedMemStruct{
     sem_t lock;
-    int test;
     int in;
     int out;
     int buff[size];
 };
+
+//Function that outputs the current status of the buffer
+void bufferStatus(struct sharedMemStruct ex){
+    printf("%s", " | ");
+    for(int i = 0; i < size; ++i){
+        if(ex.buff[i] != 0){
+            printf("%i", ex.buff[i]);
+        }
+        printf("%s", " | ");
+    }
+}
 
 #endif

@@ -1,87 +1,72 @@
 //Producer file
 //Andrew Cash
+//Operating Systems
 //11/7/2023
 
 #include "shared.h"
 
 int main(){
-    /* shared memory file descriptor */
+srand(1);
+//Setting up shared memory
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Pointer to an instance of sharedMemStruct
+    struct sharedMemStruct *sharedMem;
+ 
+    //Open shared memory. shm_fd will be integer that describes the shared memory file
     int shm_fd;
+    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0600);
  
-    /* pointer to shared memory object */
-    struct Thing *sharedMem;
+    //Configure the size of shared memory. Uses file description, and amount of bits as an integer
+    ftruncate(shm_fd, sizeof(struct sharedMemStruct));
  
-    /* create the shared memory object */
-    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0600);//0666
- 
-    /* configure the size of the shared memory object */
-    ftruncate(shm_fd, SIZE);
- 
-    /* memory map the shared memory object */
+    //Asssign the shared memory to the pointer "sharedMem"
+    //Both the producer and consumer will have a "sharedMem". They will point to the same memory location
     sharedMem = mmap(NULL, sizeof(*sharedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    //Thing = mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
-    //WORKSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS^^
-    sharedMem->test = 9;
-    //printf("%i", sharedMem->test);
-    //WORKSSSSSSS
-    fprintf(stderr, "Initializing...");
+    
+
+    //Producer only:
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Intializes the semaphore "lock" to 1
+    //sem_wait() will make a process wait intil no process is in its critical section
+    //Enforces mutual exclusion
+    printf("%s", "-Initializing the semaphore-\n");
     sem_init(&sharedMem->lock, 1, 1);
-
-
-
-///////////////////////////////////////////////////////////////////
-
+    //Initializes integers "in" and "out" to be 0, meaning buffer is empty
     sharedMem->in = 0;
     sharedMem->out = 0;
+    //Intializes buffer elements to be 0, meaning buffer is empty
+    for(int i = 0; i < size; ++i){
+        sharedMem->buff[i] = 0;
+    }
+    /////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //sharedMem->buff[0] = 1;
-    //Put semaphore into shared memory
-    int limit = 10;
+
+//Producer
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    int limit = 3;                                                        //No need to go on forever.
+
     do{
-        //if (sharedMem->buff[0] == 1){
-        //fprintf(stderr, "Producer about to wait...\n");
-        if (!((sharedMem->in + 1) % bufSize == sharedMem->out)){//if not full ;
-            sem_wait(&sharedMem->lock);
-            printf("%s", "Producer critical: ");
-            sharedMem->buff[sharedMem->in] = 1 + (rand()%9); //random number 1-9
-            printf("%s", "Produced item: ");
-            printf("%i", sharedMem->buff[sharedMem->in]);
+        if (!((sharedMem->in + 1) % size == sharedMem->out)){             //if buffer is not full: Begin waiting. Will continue if the lock
+            sem_wait(&sharedMem->lock);                                   // equals 1, meaning nothing is within its critical section
 
+            //Critical Section//////////////////////////////
+            printf("%s", "Producer is in its critical section:\n");
+            sharedMem->buff[sharedMem->in] = 1 + (rand()%9);              //random number 1-9 to be pushed onto buffer
+            printf("%s", "    Produced item: ");
+            printf("%i", sharedMem->buff[sharedMem->in]);                 //Prints the item on buffer
+            printf("%s", "\n    ");
+            sharedMem->in = (1 + sharedMem->in) % size;                   //Sets "in" to the next index of the circular array
+            bufferStatus(*sharedMem);                                     //Outputs the current items in the buffer
             printf("%s", "\n");
-            fprintf(stderr, "Producer signaled...\n");
-            sharedMem->in = (1 + sharedMem->in) % bufSize;
-            //sharedMem->buff[0] = 0;
-            sem_post(&sharedMem->lock);
-            
+            printf("%s", "~~Producer signal, leaving critical section\n");
+            sem_post(&sharedMem->lock);                                   //Semaphore signal. Increments lock, allowing others to enter
+            ////////////////////////////////////////////////              //their critical sections
             --limit;
-            if(limit == 0) {shm_unlink(name); exit(0);};
         }
     } while(limit>0);
-    //wait for consumer to signal
-
-    //sem_t lock;
-    //ptr[2] = lock;
-    //sem_init(&lock, 0, 1);
-
-
-
-
-
-
-
-
-
-    //sem_wait(&lock);
-    //sem_post(&lock);
-    //((int*)ptr)[0] = 123;
-    //((int*)ptr)[1] = 4321;
-    /* write to the shared memory object */
-    //sprintf(ptr, "%s", message_0);
- 
-    //ptr += strlen(message_0);
-    //sprintf(ptr, "%s", message_1);
-    //ptr += strlen(message_1);
     
     return 0;
 }
