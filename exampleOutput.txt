@@ -1,0 +1,33 @@
+-Initializing the semaphore-
+Producer is in its critical section:
+    Produced item: 2
+     | 2 |  |  | 
+~~Producer signal, leaving critical section
+Producer is in its critical section:
+    Produced item: 8
+     | 2 | 8 |  | 
+~~Producer signal, leaving critical section
+Consumer is in its critical section:
+    Consumed item: 2
+     |  | 8 |  | 
+~~Consumer signal, leaving critical section
+Consumer is in its critical section:
+    Consumed item: 8
+     |  |  |  | 
+~~Consumer signal, leaving critical section
+Producer is in its critical section:
+    Produced item: 1
+     |  |  | 1 | 
+~~Producer signal, leaving critical section
+Producer is in its critical section:
+    Produced item: 8
+     | 8 |  | 1 | 
+~~Producer signal, leaving critical section
+Consumer is in its critical section:
+    Consumed item: 1
+     | 8 |  |  | 
+~~Consumer signal, leaving critical section
+Consumer is in its critical section:
+    Consumed item: 8
+     |  |  |  | 
+~~Consumer signal, leaving critical section
