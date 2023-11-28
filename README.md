@@ -29,7 +29,7 @@ Shared memory was implemented using the Linux Real-Time Library. The functions u
         - "Maps" the shared memory object. Allows you to assign a pointer of any type to the shared memory, which sets the structure of the shared memory, and allows it to be accessed through that pointer.
   In the project:
 
-```
+```c
 //Setting up shared memory
  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Pointer to an instance of sharedMemStruct
