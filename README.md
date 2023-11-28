@@ -59,6 +59,40 @@ Mutual exclusion was implemented using semaphores. Semaphores are stored in shar
 - sem_post()
         - Signals the end of a critical section. Takes a semaphore as an argument. Simply increments the semaphore.
 
+  In the project:
+
+```c
+    //Intializes the semaphore "lock" to 1
+    sem_init(&sharedMem->lock, 1, 1);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////
+    sem_wait(&sharedMem->lock);                                                         //Only one at a time can check if its full/empty
+    ////////////////////////////////////////
+        printf("%s", "-A producer thread is about to check if buffer is not full- \n");
+        if ((bufferIsFull(sharedMem) == 0)){                                            //if buffer is not full: Begin waiting. Will continue if the lock equals 1, meaning nothing is within its critical section
+
+            //Critical Section//////////////////////////////
+            printf("%s", "Producer is in its critical section:\n");
+            sharedMem->buff[sharedMem->in] = 1 + (rand()%9);                            //random number 1-9 to be pushed onto buffer
+            printf("%s", "    Produced item:    ");
+            printf("%i", sharedMem->buff[sharedMem->in]);                               //Prints the item on buffer
+            printf("%s", "\n    ");
+            sharedMem->in = (1 + sharedMem->in) % size;                                 //Sets "in" to the next index of the circular array
+
+            bufferStatus(*sharedMem);                                                   //Outputs the current items in the buffer
+            printf("%s", "\n");
+            printf("%s", "~~Producer signal, leaving critical section\n");
+                                              
+            ////////////////////////////////////////////////
+            --limit;
+        }
+        ////////////////////////////////////////
+        sem_post(&sharedMem->lock);
+        ////////////////////////////////////////
+```
+
 ### Further Details of Implementation
 
 The buffer has a size of 3, which allows it to hold 2 items; All that is needed for a simple demonstration. It is designed as a circular array, which helps to follow the production and consumption of items. The shared memory has two integers named "in" and "out", these correlate to where the producer will produce, and where the consumer will consume, respectively. These move across the buffer index range (0-2) as needed. Here, the items are simply going to be a randomly generated integer from 1-9. 0 will represent an empty space in the buffer, which means that when the consumer consumes, it replaces the item with 0.
