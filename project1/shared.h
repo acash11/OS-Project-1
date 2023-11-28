@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <time.h>
 
 //size of the buffer
 #define size 3
@@ -41,6 +42,26 @@ void bufferStatus(struct sharedMemStruct ex){
         }
         printf("%s", " | ");
     }
+}
+
+int bufferIsFull(struct sharedMemStruct *sharedMem){
+    if (((sharedMem->in + 1) % size == sharedMem->out)){ //buffer is full
+        //sem_post(&sharedMem->fullEmptyLock);
+        return 1;
+    }
+    //sem_post(&sharedMem->fullEmptyLock);
+    return 0;
+
+}
+
+int bufferIsEmpty(struct sharedMemStruct *sharedMem){
+    if ((sharedMem->in == sharedMem->out)){ //buffer is empty
+        //sem_post(&sharedMem->fullEmptyLock);
+        return 1;
+    }
+    //sem_post(&sharedMem->fullEmptyLock);
+    return 0;
+
 }
 
 #endif
