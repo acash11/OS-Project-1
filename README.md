@@ -27,6 +27,26 @@ Shared memory was implemented using the Linux Real-Time Library. The functions u
         - Sets the size of the shared memory. Arguments are the file description integer and the number of bits to set the size to as an integer.
 - mmap()
         - "Maps" the shared memory object. Allows you to assign a pointer of any type to the shared memory, which sets the structure of the shared memory, and allows it to be accessed through that pointer.
+  In the project:
+
+```
+//Setting up shared memory
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Pointer to an instance of sharedMemStruct
+    struct sharedMemStruct *sharedMem;
+ 
+    //Open shared memory. shm_fd will be integer that describes the shared memory file
+    int shm_fd;
+    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0600);
+ 
+    //Configure the size of shared memory. Uses file description, and amount of bits as an integer
+    ftruncate(shm_fd, sizeof(struct sharedMemStruct));
+ 
+    //Asssign the shared memory to the pointer "sharedMem"
+    //Both the producer and consumer will have a "sharedMem". They will point to the same memory location
+    sharedMem = mmap(NULL, sizeof(*sharedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+```
 
 ### Implementing Mutual Exclusion
 
