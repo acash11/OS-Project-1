@@ -100,7 +100,7 @@ Threads were implemented using the pthread library. The functions used in this p
 
 - pthread_create()
           - Given a p_thread type, a starting routine/function, and a void pointer to arguments for the routine/function, will create a new thread in the calling process.
-  - pthread_join()
+- pthread_join()
           - Will wait until the thread defined by the p_thread input to pthread_create() has terminated.
     
     In the project:
