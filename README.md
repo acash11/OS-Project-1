@@ -48,5 +48,3 @@ Apart from that, print statements are made to help follow which process enters i
 ## Example Output
 
 A text file is attached showing an example of output from the program.
-
-[exampleOutput.txt](https://github.com/acash11/OS-Project-1/files/13295990/exampleOutput.txt)
