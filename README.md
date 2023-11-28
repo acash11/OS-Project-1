@@ -27,6 +27,7 @@ Shared memory was implemented using the Linux Real-Time Library. The functions u
         - Sets the size of the shared memory. Arguments are the file description integer and the number of bits to set the size to as an integer.
 - mmap()
         - "Maps" the shared memory object. Allows you to assign a pointer of any type to the shared memory, which sets the structure of the shared memory, and allows it to be accessed through that pointer.
+  
   In the project:
 
 ```c
@@ -93,12 +94,100 @@ Mutual exclusion was implemented using semaphores. Semaphores are stored in shar
         ////////////////////////////////////////
 ```
 
+### Implementing Threads
+
+Threads were implemented using the pthread library. The functions used in this project and light descriptions of them are as follows:
+
+- pthread_create()
+          - Given a p_thread type, a starting routine/function, and a void pointer to arguments for the routine/function, will create a new thread in the calling process.
+  - pthread_join()
+          - Will wait until the thread defined by the p_thread input to pthread_create() has terminated.
+    
+    In the project:
+
+```c
+//Producer Threads
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Create threads
+    pthread_t thread1;
+    pthread_t thread2;
+
+    pthread_create(&thread1, NULL, producer, (void*) sharedMem);
+    pthread_create(&thread2, NULL, producer, (void*) sharedMem);
+
+    //Joins threads: will wait until threads have finished execution
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+//Consumer Threads
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //Create threads
+    pthread_t thread3;
+    pthread_t thread4;
+
+    pthread_create(&thread3, NULL, consumer, (void*) sharedMem);
+    pthread_create(&thread4, NULL, consumer, (void*) sharedMem);
+
+
+    //Joins threads: will wait until threads have finished execution
+    pthread_join(thread3, NULL);
+    pthread_join(thread4, NULL);
+
+```
+
 ### Further Details of Implementation
 
-The buffer has a size of 3, which allows it to hold 2 items; All that is needed for a simple demonstration. It is designed as a circular array, which helps to follow the production and consumption of items. The shared memory has two integers named "in" and "out", these correlate to where the producer will produce, and where the consumer will consume, respectively. These move across the buffer index range (0-2) as needed. Here, the items are simply going to be a randomly generated integer from 1-9. 0 will represent an empty space in the buffer, which means that when the consumer consumes, it replaces the item with 0.
+The buffer has a size of 3, which allows it to hold 2 items; All that is needed for a simple demonstration. It is designed as a circular array, which helps to follow the production and consumption of items. The shared memory has two integers named "in" and "out", these correlate to where the producer will produce, and where the consumer will consume, respectively. These move across the buffer index range (0-2) as needed. Here, the items are simply going to be a randomly generated integer from 1-9. 0 will represent an empty space in the buffer, which means that when the consumer consumes, it replaces the item with 0. Two threads each are made for the producer process and the consumer process, resulting in 4 total threads accessing shared memory.
 
 Apart from that, print statements are made to help follow which process enters its critical section, what it does, and what the buffer looks like afterwards.
 
 ## Example Output
 
-A text file is attached showing an example of output from the program.
+An example of output from this program is shown below.
+
+```
+-Initializing the semaphore-
+-A producer thread is about to check if buffer is not full- 
+Producer is in its critical section:
+    Produced item:    2
+     | 2 |  |  | 
+~~Producer signal, leaving critical section
+-A consumer thread is about to check if buffer has an item- 
+Consumer is in its critical section:
+    Consumed item:    2
+     |  |  |  | 
+~~Consumer signal, leaving critical section
+-A producer thread is about to check if buffer is not full- 
+Producer is in its critical section:
+    Produced item:    9
+     |  | 9 |  | 
+~~Producer signal, leaving critical section
+-A consumer thread is about to check if buffer has an item- 
+Consumer is in its critical section:
+    Consumed item:    9
+     |  |  |  | 
+~~Consumer signal, leaving critical section
+-A consumer thread is about to check if buffer has an item- 
+-A producer thread is about to check if buffer is not full- 
+Producer is in its critical section:
+    Produced item:    7
+     |  |  | 7 | 
+~~Producer signal, leaving critical section
+-A producer thread is about to check if buffer is not full- 
+Producer is in its critical section:
+    Produced item:    2
+     | 2 |  | 7 | 
+~~Producer signal, leaving critical section
+-A consumer thread is about to check if buffer has an item- 
+Consumer is in its critical section:
+    Consumed item:    7
+     | 2 |  |  | 
+~~Consumer signal, leaving critical section
+-A consumer thread is about to check if buffer has an item- 
+Consumer is in its critical section:
+    Consumed item:    2
+     |  |  |  | 
+~~Consumer signal, leaving critical section
+```
